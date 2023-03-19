@@ -1,0 +1,12 @@
+syntax on
+set vb
+set tabstop=2
+set shiftwidth=2
+set expandtab
+set ai
+set smartindent
+set number
+set hlsearch
+set ruler
+set mouse=a
+set background=dark
