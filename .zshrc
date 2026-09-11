@@ -11,5 +11,7 @@ zstyle ':vcs_info:git:*' formats ' (%b)'
 setopt PROMPT_SUBST
 
 # Minimalist Prompt: Cyan Path | Yellow Git Branch | Green/Red Prompt Symbol
-PROMPT='%F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f %(?.%F{green}.%F{red})❯%f '
+#PROMPT='%F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f %(?.%F{green}.%F{red})❯%f '
+#PROMPT='%F{magenta}%m%f %F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f %(?.%F{green}.%F{red})❯%f '
+PROMPT='%F{magenta}%n@%m%f %F{cyan}%~%f%F{yellow}${vcs_info_msg_0_}%f %(?.%F{green}.%F{red})❯%f '
 
