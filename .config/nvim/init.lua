@@ -1,63 +1,181 @@
 -- ============================================================================
--- ULTRA-FAST, ZERO-BLOAT NEOVIM CONFIG (~/.config/nvim/init.lua)
+-- Minimal Neovim 0.12+
+-- Mostly vanilla Neovim + Telescope + Tree-sitter.
 -- ============================================================================
 
--- Exact default Vim colors
---vim.cmd.colorscheme("vim")
-vim.cmd.colorscheme("default")
-
--- Speed & Performance Defaults
-vim.opt.termguicolors = false   -- Uses fast 16-color ANSI output over SSH
-vim.opt.cursorline = false      -- Disables row redraws on every cursor movement
-vim.opt.updatetime = 300        -- Snappy interface response time
-vim.opt.background = "dark"
-
--- Essential Usability
-vim.opt.number = true           -- Show line numbers
-vim.opt.relativenumber = true   -- Relative jumps (e.g., 5j, 10k)
-vim.opt.mouse = "a"             -- Full mouse support
-
--- Indentation (2 spaces)
-vim.opt.tabstop = 2
-vim.opt.shiftwidth = 2
-vim.opt.expandtab = true
-vim.opt.smartindent = true
-
--- Search Improvements
-vim.opt.hlsearch = true
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-
--- Persistent Undo
-local undodir = vim.fn.stdpath("data") .. "/undo"
-if vim.fn.isdirectory(undodir) == 0 then
-  vim.fn.mkdir(undodir, "p")
-end
-vim.opt.undodir = undodir
-vim.opt.undofile = true
-
--- Native SSH Clipboard (OSC 52 Yanking)
-vim.opt.clipboard = "unnamedplus"
-if vim.env.SSH_CONNECTION then
-  vim.g.clipboard = {
-    name = "OSC 52",
-    copy = {
-      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-    },
-    paste = {
-      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-    },
-  }
-end
-
--- Keybindings
+-- Space is the prefix for our custom shortcuts.
 vim.g.mapleader = " "
 
--- Clear search highlight on Esc
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+-- Short aliases to avoid repeatedly writing vim.opt / vim.keymap.set.
+local opt = vim.opt
+local map = vim.keymap.set
 
--- Quick Save & Quit
-vim.keymap.set("n", "<leader>w", "<cmd>w<CR>")
-vim.keymap.set("n", "<leader>q", "<cmd>q<CR>")
+-- ============================================================================
+-- EDITOR
+-- ============================================================================
+
+-- Show the current real line number.
+opt.number = true
+
+-- Other lines show their distance from the cursor; useful for 5j, 3k, etc.
+opt.relativenumber = true
+
+-- Keep 4 lines visible above/below the cursor while scrolling.
+opt.scrolloff = 4
+
+-- A TAB character visually occupies 2 columns.
+opt.tabstop = 2
+
+-- >>, << and automatic indentation use 2 columns.
+opt.shiftwidth = 2
+
+-- Pressing Tab inserts spaces instead of a literal TAB.
+opt.expandtab = true
+
+-- Basic automatic indentation after lines such as "if ... {".
+opt.smartindent = true
+
+-- Long code lines scroll horizontally instead of wrapping.
+opt.wrap = false
+
+-- Preserve undo history after closing and reopening a file.
+opt.undofile = true
+
+-- /hello also matches Hello and HELLO.
+opt.ignorecase = true
+
+-- But /Hello becomes case-sensitive because it contains a capital letter.
+opt.smartcase = true
+
+-- Keep search results highlighted.
+opt.hlsearch = true
+
+-- Use the terminal's color palette instead of 24-bit RGB colors.
+--vim.cmd.colorscheme("default")
+opt.termguicolors = false
+
+-- Normal yanks/pastes use the system clipboard.
+opt.clipboard = "unnamedplus"
+
+-- :vsplit creates the new window on the right.
+opt.splitright = true
+
+-- :split creates the new window below.
+opt.splitbelow = true
+
+-- How quickly idle events are triggered.
+opt.updatetime = 300
+
+-- Wait at most 300ms for multi-key mappings.
+opt.timeoutlen = 300
+
+-- ============================================================================
+-- KEYMAPS
+-- ============================================================================
+
+-- Esc removes highlighting left behind by / searches.
+map("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+-- x deletes into Vim's black-hole register.
+-- This prevents x from replacing whatever you previously yanked.
+map("n", "x", '"_x')
+
+-- Space + e opens Neovim's built-in file explorer.
+map("n", "<leader>e", "<cmd>Explore<CR>")
+
+-- Ctrl+h/j/k/l moves directly between split windows.
+map("n", "<C-h>", "<C-w>h")
+map("n", "<C-j>", "<C-w>j")
+map("n", "<C-k>", "<C-w>k")
+map("n", "<C-l>", "<C-w>l")
+
+-- Ctrl+d/u scrolls half a page and then centers the cursor.
+map("n", "<C-d>", "<C-d>zz")
+map("n", "<C-u>", "<C-u>zz")
+
+-- n/N jumps between search results and centers the result.
+map("n", "n", "nzzzv")
+map("n", "N", "Nzzzv")
+
+-- ============================================================================
+-- PLUGINS
+-- Uses Neovim 0.12's built-in package manager: vim.pack
+-- ============================================================================
+
+vim.pack.add({
+  -- Plenary contains utility functions required by Telescope.
+  { src = "https://github.com/nvim-lua/plenary.nvim" },
+
+  -- Telescope is the fuzzy finder.
+  -- It finds files, searches project text, switches buffers, etc.
+  { src = "https://github.com/nvim-telescope/telescope.nvim" },
+
+  -- Tree-sitter provides parsers for better syntax understanding/highlighting.
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+})
+
+-- ============================================================================
+-- TELESCOPE
+-- ============================================================================
+
+-- Space + f:
+-- Fuzzy-find files below Neovim's current working directory.
+map("n", "<leader>f", function()
+  require("telescope.builtin").find_files()
+end)
+
+-- Space + g:
+-- Search text inside all files below the current directory.
+-- Requires `ripgrep` (`rg`) to be installed.
+map("n", "<leader>g", function()
+  require("telescope.builtin").live_grep()
+end)
+
+-- Space + b:
+-- Fuzzy-find among files already open in Neovim.
+map("n", "<leader>b", function()
+  require("telescope.builtin").buffers()
+end)
+
+-- Space + h:
+-- Fuzzy-search Neovim's built-in :help documentation.
+map("n", "<leader>h", function()
+  require("telescope.builtin").help_tags()
+end)
+
+-- ============================================================================
+-- TREE-SITTER
+-- ============================================================================
+
+-- Add/remove languages here depending on what you actually use.
+local treesitter_languages = {
+  "bash",
+  "c",
+  "cpp",
+  "css",
+  "html",
+  "javascript",
+  "json",
+  "lua",
+  "python",
+  "rust",
+  "toml",
+  "typescript",
+  "yaml",
+  "asm",
+  "go",
+  "php",
+  "zig",
+  "ruby",
+}
+
+-- Install missing parsers.
+require("nvim-treesitter").install(treesitter_languages)
+
+-- Enable Tree-sitter highlighting for those languages.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = treesitter_languages,
+  callback = function()
+    vim.treesitter.start()
+  end,
+})
