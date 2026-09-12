@@ -19,5 +19,12 @@ nnoremap <Esc> :noh<CR> " Press Esc to clear search highlights
 " --- Remote / SSH Ergonomics ---
 set visualbell          " Quiet errors without terminal beeping
 set mouse=a             " Mouse support enabled
-set undo-dir=~/.vim/undodir " Persistent undo across sessions
+
+" Create undo directory automatically if missing
+if !isdirectory(expand('~/.vim/undodir'))
+    call mkdir(expand('~/.vim/undodir'), 'p')
+endif
+
+set undodir=~/.vim/undodir
 set undofile
+
