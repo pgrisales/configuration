@@ -36,7 +36,7 @@ opt.expandtab = true
 opt.smartindent = true
 
 -- Long code lines scroll horizontally instead of wrapping.
-opt.wrap = false
+opt.wrap = true
 
 -- Preserve undo history after closing and reopening a file.
 opt.undofile = true
